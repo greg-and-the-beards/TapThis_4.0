@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+
+<link href="css/business-casual.css" rel="stylesheet">
+<link href="css/bootstrap.css" rel="stylesheet">
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.0/themes/smoothness/jquery-ui.css">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/css?family=Josefin+Slab:100,300,400,600,700,100italic,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
+
+<title>Beer Details and Reviews</title>
+</head>
+<body>
+
+	<!-- Navigation -->
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container-fluid">
+			<ul class="nav navbar-nav">
+				<li id="searchitem">
+					<form class="navbar-form" action="/searchResults" id="searchdiv"
+						role="search">
+						<div class="input-group">
+							<input type="text" class="form-control" placeholder="Search for beer!" 
+								name="beerInfo">
+							<div class="input-group-btn">
+								<button class="btn btn-search" type="submit">
+									<i class="glyphicon glyphicon-search"></i>
+								</button>
+							</div>
+						</div>
+					</form>
+				</li>
+				<li id="regButton">
+					<form class="navbar-form" action="/register">
+						<button type="submit" class="btn btn-primary">Register</button>
+					</form>
+				</li>
+				<li id="homeLogo"> <div id="logodiv"><a href="/"><img src="img/TapThisBanner.png" style="width: 400px; "></a></div></li>
+				<li id="rightSide">
+					<form class="navbar-form" action="/userlogin"
+							method="POST" id="loginform">
+						<input type="text" class="form-control" placeholder="Enter Username" name="userName"
+									required>
+						<input type="password" class="form-control" placeholder="Enter Password" name="password"
+									required>
+						<button id="login" class="btn btn-search" class="form-control"  type="button">Login</button>
+					</form>
+				</li>
+			</ul>
+		</div>
+	</nav>
+
+		<!-- div for displaying reviews -->
+		<div id="revWrapper" class='col-md-6' style="padding: 50px;">
+			<!-- <b>Have you had this beer? Leave your review here!</b> -->
+
+				<div class="row">
+					<div class="box" style="border: 2px solid black;">
+					<h3 align="center">Other Users Talking About This Beer</h3>
+					<br>
+					<br>
+						<div id="eachReview" th:each="review : ${reviews}" style="padding: 25px; border-top: 1px solid black;">
+							<div>
+								<strong id="thymeleafBS">Reviewer: </strong>
+								<span th:text="${review.userName}"></span>
+								<br>
+								<strong id="thymeleafBS">Hops Rating: </strong>
+								<span th:text="${review.hopsRating}"></span>
+								<br>
+								<strong id="thymeleafBS">Malt Rating: </strong>
+								<span th:text="${review.maltRating}"></span>
+								<br>
+								<strong id="thymeleafBS">Overall Beer Rating: </strong>
+								<span th:text="${review.beerRating}"></span>
+								<br>
+								<strong id="thymeleafBS">Reviewer's Comment: </strong>
+								<span th:text="${review.reviewComment}"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+		</div>
+
+	
+
+	<div id="infoReview" class='col-md-6'
+		style="padding: 25px;">
+
+		<!-- div to display API data -->
+
+		<div id="wrapper"
+			style="padding: 25px; background-color: orange">
+			<h3 align="center">Your Selected Beer</h3>
+
+			<!-- closing for beerInfo wrapper div -->
+		</div>
+
+		<!-- closing of div for beer info & reviews/form class="row"-->
+	</div>
+
+
+
+
+	<script
+		src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+	<script>
+		$(function() {
+
+			// retrieves params passed from APIResults page for selected beer from user
+			function $_GET(param) {
+				var vars = {};
+				window.location.href.replace(location.hash, '').replace(
+						/[?&]+([^=&]+)=?([^&]*)?/gi, // regexp
+						function(m, key, value) { // callback
+							vars[key] = value !== undefined ? value : '';
+						});
+				if (param) {
+					return vars[param] ? vars[param] : null;
+				}
+				return vars;
+			}
+
+			// runs API call off of passed params from selection on APIResults page 
+			$
+					.get(
+							"https://api.untappd.com/v4/search/beer?q="
+									+ $_GET("beerInfo")
+									+ "&client_id=B2397B44662D900D4265BF03E035CE16D5CF4846&client_secret=2AE5A2667723D53FDDDCF2410EB5412F91FE433A",
+							function(data) {
+
+								//	console.log(JSON.stringify(data))
+
+								$
+										.each(
+												data.response.beers.items,
+												function(index, value) {
+
+													//	var beerImg = value.beer.beer_label
+													breweryLink = value.brewery.contact.url
+													beerName = value.beer.beer_name
+													breweryName = value.brewery.brewery_name
+													var beerInfo = breweryName
+															+ " " + beerName
+
+													$("#wrapper")
+															.append(
+																	"<div style='border:3px solid black' id='oneBeer'>");
+													$("#wrapper")
+															.append(
+																	"<ul align='center'>");
+													$("#wrapper")
+															.append(
+																	"<li align='center'>"
+																			+ '<b>'
+																			+ value.beer.beer_name
+																			+ '</b>'
+																			+ "</li>");
+													$("#wrapper")
+															.append(
+																	"<li align='center'>"
+																			+ '<a href= "' + breweryLink +'">'
+																			+ value.brewery.brewery_name
+																			+ '</a>'
+																			+ "</li>");
+													$("#wrapper")
+															.append(
+																	"<li align='center'>"
+																			+ '<img src=' + value.beer.beer_label + '>'
+																			+ "</li>");
+													$("#wrapper")
+															.append(
+																	"<li align='center'>"
+																			+ "<b>Abv : </b> "
+																			+ value.beer.beer_abv
+																			+ "</li>");
+													$("#wrapper")
+															.append(
+																	"<li align='center'>"
+																			+ "<b>Style : </b> "
+																			+ value.beer.beer_style
+																			+ "</li>");
+													$("#wrapper")
+															.append(
+																	"<li align='center'>"
+																			+ "<b>Beer Description:</b> "
+																			+ value.beer.beer_description
+																			+ "</li>");
+													$("#wrapper")
+															.append(
+																	"<li align='center'>"
+																			+ "<b>Brewing Location: </b>"
+																			+ value.brewery.location.brewery_city
+																			+ ", "
+																			+ value.brewery.location.brewery_state
+																			+ "</li>");
+													$("#wrapper").append(
+															"</ul><br>");
+													$("#wrapper").append(
+															"</div>");
+													$("#beerName")
+															.val(
+																	value.beer.beer_name);
+													$("#breweryName")
+															.val(
+																	value.brewery.brewery_name);
+													$("#beerInfo")
+															.val(
+																	value.brewery.brewery_name
+																			+ " "
+																			+ value.beer.beer_name)
+															.hide();
+
+													// hides the UID input field in the form. Will need to add to this function to populate this hidden field with data from mySQL table
+													/* 	$("#reviewUserId")
+																.hide(); */
+
+													// displays the first div generated from parsed API data
+													$.first("#oneBeer")
+															.display();
+
+												});
+							}, "json")
+
+		});
+	</script>
+ 
+</body>
+</html>
